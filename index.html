@@ -1470,6 +1470,7 @@ showZone("dailyZone");
 updateHeader();
   let isGM = localStorage.getItem("isGM") === "true";
 
+  showGM();
 function checkGM() {
   if (isGM) {
     document.getElementById("gmPanel").style.display = "block";
@@ -1496,6 +1497,31 @@ function gmClick() {
     enterGM();
   }
 }
+  function showGM() {
+  if (localStorage.getItem("isGM") === "true") {
+    document.getElementById("gmPanel").style.display = "block";
+  }
+}
+
+function addMoney() {
+  let money = Number(localStorage.getItem("money") || 0);
+  money += 1000000000;
+  localStorage.setItem("money", money);
+  alert("ได้เงิน +1B");
+  location.reload();
+}
+
+function addGems() {
+  let gems = Number(localStorage.getItem("gems") || 0);
+  gems += 1000000000;
+  localStorage.setItem("gems", gems);
+  alert("ได้เพชร +1B");
+  location.reload();
+    }
 </script>
+  <div id="gmPanel" style="position:fixed;bottom:20px;right:20px;display:none;z-index:999999;">
+  <button onclick="addMoney()" style="padding:10px;border-radius:10px;margin:5px;">💰 +1B</button>
+  <button onclick="addGems()" style="padding:10px;border-radius:10px;margin:5px;">💎 +1B</button>
+  </div>
 </body>
       </html>
