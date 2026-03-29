@@ -1468,6 +1468,34 @@ renderMissions();
 refreshClanUI();
 showZone("dailyZone");
 updateHeader();
+  let isGM = localStorage.getItem("isGM") === "true";
+
+function checkGM() {
+  if (isGM) {
+    document.getElementById("gmPanel").style.display = "block";
+  }
+}
+
+function enterGM() {
+  let code = prompt("ใส่รหัสลับ");
+  if (code === "1122") {
+    isGM = true;
+    localStorage.setItem("isGM", "true");
+    alert("เข้าสู่ GM แล้ว");
+    checkGM();
+  } else {
+    alert("รหัสผิด");
+  }
+    }
+  let clickCount = 0;
+
+function gmClick() {
+  clickCount++;
+  if (clickCount >= 5) {
+    clickCount = 0;
+    enterGM();
+  }
+}
 </script>
 </body>
       </html>
